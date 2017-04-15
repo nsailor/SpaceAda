@@ -3,8 +3,14 @@ use super::data_type;
 use super::expression;
 
 pub expression -> expression::Expression
-    = binary_expr / terminal_expr
-    
+    = function_call_expr / binary_expr / terminal_expr
+
+pub function_call_expr -> expression::Expression
+    = name:identifier _ "(" params:parameter_list ")" { expression::Expression::FunctionCall(name, params) }
+
+pub parameter_list -> Vec<expression::Expression>
+    = expression ** wh<",">
+
 pub binary_expr -> expression::Expression = #infix<terminal_expr> {
 	#L x "+" y { expression::Expression::Binary("+".to_string(), Box::new(x), Box::new(y)) }
 	   x "-" y { expression::Expression::Binary("-".to_string(), Box::new(x), Box::new(y)) }
@@ -13,7 +19,7 @@ pub binary_expr -> expression::Expression = #infix<terminal_expr> {
 }
 
 pub enclosed_expr -> expression::Expression
-    = _ "(" _ x:expression _ ")" _ { x }
+    = wh<"("> x:expression wh<")"> { x }
 
 pub terminal_expr -> expression::Expression
     = enclosed_expr /
@@ -29,5 +35,8 @@ pub identifier -> String
 pub data_type -> data_type::DataType
     = "Integer" { data_type::DataType::Integer }
 
+wh<X> = _ X _
+
 _ = ignored*
 ignored = " " / "\n" 
+

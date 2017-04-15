@@ -33,4 +33,24 @@ fn test_terminal_expressions() {
 }
 
 #[test]
-fn test_arithmetic() {}
+fn test_arithmetic() {
+    assert_eq!(ada_grammar::expression("3 + 2 * 6"), Ok(Expression::Binary("+".to_string(),
+        Box::new(Expression::IntValue(3)),
+        Box::new(Expression::Binary("*".to_string(),
+            Box::new(Expression::IntValue(2)),
+            Box::new(Expression::IntValue(6)))))));
+
+    assert_eq!(ada_grammar::expression("(3 + 2) * 6"), Ok(Expression::Binary("*".to_string(),
+        Box::new(Expression::Binary("+".to_string(),
+            Box::new(Expression::IntValue(3)),
+            Box::new(Expression::IntValue(2)))),
+        Box::new(Expression::IntValue(6)))));
+}
+
+#[test]
+fn test_function_calls() {
+    assert_eq!(ada_grammar::expression("f(3, 2)"),
+               Ok(Expression::FunctionCall("f".to_string(),
+                                           vec![Expression::IntValue(3),
+                                                Expression::IntValue(2)])));
+}

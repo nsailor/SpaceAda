@@ -8,5 +8,6 @@ mod ada_grammar {
 fn main() {
     println!("SpaceAda Compiler v0.0.1 Pre-Alpha");
     println!("Not much to do, bye!");
-    println!("{:?}", ada_grammar::expression("3 * (2+2)"));
+    println!("{:?}",
+             ada_grammar::expression("Pitch_Down(PID_Signal(6, 5 - 2), 3)"));
 }
