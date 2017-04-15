@@ -1,0 +1,10 @@
+[package]
+name = "spadac"
+version = "0.1.0"
+authors = ["Jason P. Barmparesos <jason.barmparesos@gmail.com>"]
+build = "build.rs"
+
+[build-dependencies]
+peg = { version = "*" }
+
+[dependencies]

@@ -1,0 +1,33 @@
+
+use super::data_type;
+use super::expression;
+
+pub expression -> expression::Expression
+    = binary_expr / terminal_expr
+    
+pub binary_expr -> expression::Expression = #infix<terminal_expr> {
+	#L x "+" y { expression::Expression::Binary("+".to_string(), Box::new(x), Box::new(y)) }
+	   x "-" y { expression::Expression::Binary("-".to_string(), Box::new(x), Box::new(y)) }
+	#L x "*" y { expression::Expression::Binary("*".to_string(), Box::new(x), Box::new(y)) }
+	   x "/" y { expression::Expression::Binary("/".to_string(), Box::new(x), Box::new(y)) }
+}
+
+pub enclosed_expr -> expression::Expression
+    = _ "(" _ x:expression _ ")" _ { x }
+
+pub terminal_expr -> expression::Expression
+    = enclosed_expr /
+      _ x:int_value _ { expression::Expression::IntValue(x) } /
+      _ x:identifier _ { expression::Expression::Variable(x) }
+
+pub int_value -> i32
+    = n:$("-"? [0-9]+) { n.parse().unwrap() }
+
+pub identifier -> String
+    = s:$([a-zA-Z][_a-zA-Z0-9]*) { s.to_string() }
+
+pub data_type -> data_type::DataType
+    = "Integer" { data_type::DataType::Integer }
+
+_ = ignored*
+ignored = " " / "\n" 
