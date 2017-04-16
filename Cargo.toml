@@ -1,6 +1,6 @@
 [package]
 name = "spadac"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Jason P. Barmparesos <jason.barmparesos@gmail.com>"]
 build = "build.rs"
 
@@ -10,3 +10,4 @@ peg = { version = "*" }
 [dependencies]
 regex = "*"
 docopt = "*"
+llvm-alt = "*"

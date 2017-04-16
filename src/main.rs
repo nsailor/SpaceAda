@@ -1,4 +1,6 @@
 
+extern crate llvm;
+
 mod data_type;
 mod expression;
 mod statement;
@@ -11,6 +13,8 @@ mod ada_grammar {
 
 use std::fs::File;
 use std::io::prelude::*;
+use std::path::Path;
+use llvm::*;
 
 fn main() {
     println!("SpaceAda Compiler v0.0.1 Pre-Alpha");
@@ -32,4 +36,22 @@ fn main() {
         }
         Err(s) => println!("Syntax error: {}", s),
     }
+
+    println!("----------------\nLLVM Output\n----------------");
+    let ctx = Context::new();
+    let module = Module::new("spadac1", &ctx);
+
+    let ftype = FunctionType::new(Type::get::<i32>(&ctx), &[Type::get::<i32>(&ctx)]);
+    let func = module.add_function("Square", ftype);
+    let entry = func.append("entry");
+    let builder = Builder::new(&ctx);
+    builder.position_at_end(entry);
+    let arg_x = &func[0];
+    let sum = builder.build_mul(arg_x, arg_x);
+    builder.build_ret(sum);
+
+    println!("Module = {:?}", module);
+    println!("Compiling LLVM-IR...");
+    module.compile(Path::new("spad-code.o"), 1).unwrap();
+    println!("Done!");
 }
