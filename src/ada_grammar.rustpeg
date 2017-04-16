@@ -90,7 +90,7 @@ pub int_value -> i32
     = n:$("-"? [0-9]+) { n.parse().unwrap() }
 
 pub float_value -> f32
-    = n:$("-"? [0-9]+ "." [0-9]+) { n.parse().unwrap() }
+    = n:$("-"? [0-9]* "." [0-9]+) { n.parse().unwrap() }
 
 pub identifier -> String
     = s:$(#quiet<[a-zA-Z][_a-zA-Z0-9]*>) { s.to_string() } / #expected("identifier")

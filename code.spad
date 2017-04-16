@@ -1,14 +1,10 @@
 
-function Square(X : in Integer) return Integer is
-	S : Integer;
+-- Finds the square of an integer and the area of a circle.
+-- For some reason these two need to be one procedure.
+-- ASAT, I suppose :)
+procedure Square(X : in Integer; XF : in Float;
+	S : out Integer; SF : out Float) is
 begin
 	S := X * X;
-	S := S + 1;
-	S := S - 1;
-	return S;
+	SF := XF * XF * 3.14159;
 end Square;
-
-function Square_Float(X : in Float) return Float is
-begin
-	return X * X + 0.65;
-end Square_Float;

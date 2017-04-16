@@ -49,7 +49,7 @@ fn test_arithmetic() {
         Box::new(Expression::Binary("+".to_string(),
             Box::new(Expression::FloatValue(3.0)),
             Box::new(Expression::FloatValue(2.0)))),
-        Box::new(Expression::IntValue(6)))));
+        Box::new(Expression::FloatValue(6.0)))));
 }
 
 #[test]
