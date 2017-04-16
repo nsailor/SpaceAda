@@ -2,6 +2,29 @@
 use super::data_type;
 use super::expression;
 use super::statement;
+use super::prototype;
+
+pub prototype -> prototype::Prototype
+    = wh<"function"> name:identifier wh<"("> p:parameter_decl_list wh<")"> wh<"return"> rtype:data_type {
+        prototype::Prototype { name:name, returns:Some(rtype), arguments:p }
+    } /
+    wh<"procedure"> name:identifier wh<"("> p:parameter_decl_list wh<")"> {
+        prototype::Prototype { name:name, returns:None, arguments:p }
+    } /
+    wh<"procedure"> name:identifier {
+        prototype::Prototype { name:name, returns:None, arguments:vec![] }
+    }
+
+pub parameter_decl_list -> Vec<prototype::ParameterDeclaration>
+    = parameter_declaration ** wh<";">
+pub parameter_declaration -> prototype::ParameterDeclaration
+    = _ name:identifier wh<":"> dir:parameter_direction _ dtype:data_type _ {
+            prototype::ParameterDeclaration { data_type:dtype, name:name, direction:dir } }
+
+pub parameter_direction -> prototype::ParameterDirection
+    = wh<"in"> wh<"out"> { prototype::ParameterDirection::InOut } / 
+      wh<"in"> { prototype::ParameterDirection::In } /
+      wh<"out"> { prototype::ParameterDirection::Out }
 
 pub statement -> statement::Statement
     = return_stmt / assignment_stmt / procedure_call_stmt
@@ -47,10 +70,10 @@ pub identifier -> String
     = s:$([a-zA-Z][_a-zA-Z0-9]*) { s.to_string() }
 
 pub data_type -> data_type::DataType
-    = "Integer" { data_type::DataType::Integer }
+    = #quiet<"Integer"> { data_type::DataType::Integer } / #expected("a data type")
 
 wh<X> = _ X _
 
-_ = ignored*
+_ = #quiet<ignored>*
 ignored = " " / "\n" 
 
