@@ -3,6 +3,17 @@ use super::data_type;
 use super::expression;
 use super::statement;
 use super::prototype;
+use super::subprogram;
+
+pub subprogram -> subprogram::Subprogram
+    = p:prototype wh<"is"> vars:var_declaration* wh<"begin"> smts:statement* wh<"end"> identifier wh<";"> {
+        subprogram::Subprogram { prototype:p, variables:vars, body:smts }
+    }
+
+pub var_declaration -> subprogram::VarDeclaration
+    = _ name:identifier wh<":"> dtype:data_type wh<";"> {
+        subprogram::VarDeclaration { data_type:dtype, name:name }
+    }
 
 pub prototype -> prototype::Prototype
     = wh<"function"> name:identifier wh<"("> p:parameter_decl_list wh<")"> wh<"return"> rtype:data_type {
@@ -67,7 +78,7 @@ pub int_value -> i32
     = n:$("-"? [0-9]+) { n.parse().unwrap() }
 
 pub identifier -> String
-    = s:$([a-zA-Z][_a-zA-Z0-9]*) { s.to_string() }
+    = s:$(#quiet<[a-zA-Z][_a-zA-Z0-9]*>) { s.to_string() } / #expected("identifier")
 
 pub data_type -> data_type::DataType
     = #quiet<"Integer"> { data_type::DataType::Integer } / #expected("a data type")
