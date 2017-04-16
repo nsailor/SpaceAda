@@ -62,7 +62,7 @@ pub procedure_call_stmt -> statement::Statement
       _ name:identifier wh<";"> { statement::Statement::ProcedureCall(name, vec![]) }
 
 pub expression -> expression::Expression
-    = function_call_expr / binary_expr / terminal_expr
+    = binary_expr / terminal_expr
 
 pub function_call_expr -> expression::Expression
     = name:identifier _ "(" params:parameter_list ")" { expression::Expression::FunctionCall(name, params) }
@@ -81,7 +81,8 @@ pub enclosed_expr -> expression::Expression
     = wh<"("> x:expression wh<")"> { x }
 
 pub terminal_expr -> expression::Expression
-    = enclosed_expr / 
+    = _ n:function_call_expr _  { n } /
+        enclosed_expr / 
       _ x:float_value _ { expression::Expression::FloatValue(x) } /
       _ x:int_value _ { expression::Expression::IntValue(x) } /
       _ x:identifier _ { expression::Expression::Variable(x) }

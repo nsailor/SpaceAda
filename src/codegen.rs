@@ -1,7 +1,7 @@
 
 use llvm::*;
 use parser::ASTNode;
-use subprogram::Subprogram;
+use subprogram::{Subprogram, Declaration};
 use prototype::*;
 use data_type::*;
 use statement::Statement;
@@ -11,6 +11,7 @@ use std::collections::HashMap;
 pub struct CodegenContext<'a> {
     pub ctx: &'a Context,
     pub module: &'a Module,
+    pub fmap: FunctionMap<'a>,
 }
 
 struct Variable<'a> {
@@ -18,7 +19,13 @@ struct Variable<'a> {
     pub is_pointer: bool,
 }
 
+pub struct FunctionMeta<'a> {
+    pub function: &'a Function,
+    pub prototype: Prototype,
+}
+
 type VariableMap<'a> = HashMap<&'a str, Variable<'a>>;
+type FunctionMap<'a> = HashMap<String, FunctionMeta<'a>>;
 
 fn void_type<'a>() -> &'a Type {
     unsafe {
@@ -40,7 +47,7 @@ impl<'a> CodegenContext<'a> {
     pub fn codegen(&mut self, ast_node: &ASTNode) {
         match *ast_node {
             ASTNode::Subprogram(ref sp) => self.codegen_subprogram(sp),
-            ASTNode::Declaration(_) => panic!("Can't generate declarations."),
+            ASTNode::Declaration(ref dec) => self.codegen_dec(dec),
         };
     }
 
@@ -51,6 +58,12 @@ impl<'a> CodegenContext<'a> {
         let entry = func.append("entry");
         let builder = Builder::new(self.ctx);
         builder.position_at_end(entry);
+
+        self.fmap.insert(sp.prototype.name.clone(),
+                         FunctionMeta {
+                             function: func,
+                             prototype: sp.prototype.clone(),
+                         });
 
         // Create the variable list.
         let mut variables: VariableMap = HashMap::new();
@@ -88,6 +101,46 @@ impl<'a> CodegenContext<'a> {
         }
     }
 
+    fn codegen_dec(&mut self, dec: &Declaration) {
+        let func = self.module
+            .add_function(dec.prototype.name.as_str(),
+                          self.function_type_from_prototype(&dec.prototype));
+        self.fmap.insert(dec.prototype.name.clone(),
+                         FunctionMeta {
+                             function: func,
+                             prototype: dec.prototype.clone(),
+                         });
+    }
+
+    fn codegen_call(&self,
+                    name: &String,
+                    parameters: &[Expression],
+                    builder: &'a Builder,
+                    vars: &'a VariableMap)
+                    -> &'a Value {
+        // Find the function.
+        let func = &self.fmap[name];
+        let mut args: Vec<&'a Value> = vec![];
+        let mut par_index: usize = 0;
+        for arg in &func.prototype.arguments {
+            let is_pointer = arg.direction != ParameterDirection::In;
+            match is_pointer {
+                false => args.push(self.codegen_expression(&parameters[par_index], vars, builder)),
+                true => {
+                    match parameters[par_index] {
+                        Expression::Variable(ref s) => {
+                            /// @todo Should check if the variable is indeed a pointer.
+                            args.push(vars[s.as_str()].value)
+                        }
+                        _ => panic!("\"out\" parameters need an identifier!"),
+                    }
+                }
+            };
+            par_index += 1;
+        }
+        builder.build_call(func.function, args.as_slice())
+    }
+
     fn codegen_statement(&self,
                          s: &Statement,
                          has_returned: &mut bool,
@@ -108,7 +161,9 @@ impl<'a> CodegenContext<'a> {
                 builder.build_store(self.codegen_expression(val, vars, builder),
                                     vars[dest.as_str()].value)
             }
-            _ => panic!("Procedure calls are not supported."),
+            Statement::ProcedureCall(ref s, ref args) => {
+                self.codegen_call(s, args.as_slice(), builder, vars)
+            }
         };
     }
 
@@ -138,7 +193,9 @@ impl<'a> CodegenContext<'a> {
                     _ => unimplemented!(),
                 }
             }
-            _ => unimplemented!(),
+            Expression::FunctionCall(ref s, ref args) => {
+                self.codegen_call(s, args.as_slice(), builder, vars)
+            }
         }
     }
 

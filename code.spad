@@ -1,10 +1,17 @@
 
--- Finds the square of an integer and the area of a circle.
--- For some reason these two need to be one procedure.
--- ASAT, I suppose :)
-procedure Square(X : in Integer; XF : in Float;
-	S : out Integer; SF : out Float) is
+-- Defined in a separate C file.
+function Int_To_Float(X : in Integer) return Float;
+
+procedure Float_Square(X : in Float; S : out Float) is
 begin
 	S := X * X;
-	SF := XF * XF * 3.14159;
+end Float_Square;
+
+procedure Square(X : in Integer; S : out Integer; SF : out Float) is
+	XF : Float;
+begin
+	S := X * X;
+	XF := Int_To_Float(X);
+	Float_Square(XF, SF);
+	SF := SF * 3.14159;
 end Square;

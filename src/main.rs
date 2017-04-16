@@ -48,6 +48,7 @@ fn main() {
     let mut codegen_ctx = codegen::CodegenContext {
         ctx: &ctx,
         module: &module,
+        fmap: std::collections::HashMap::new(),
     };
     println!("Generating code...");
     for node in ast_tree {
