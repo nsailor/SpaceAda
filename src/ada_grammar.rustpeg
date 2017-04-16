@@ -1,6 +1,20 @@
 
 use super::data_type;
 use super::expression;
+use super::statement;
+
+pub statement -> statement::Statement
+    = return_stmt / assignment_stmt / procedure_call_stmt
+
+pub assignment_stmt -> statement::Statement
+    = _ dest:identifier wh<":="> val:expression wh<";"> { statement::Statement::Assignment(dest, val) }
+
+pub return_stmt -> statement::Statement
+    = wh<"return"> val:expression? wh<";"> { statement::Statement::Return(val) }
+
+pub procedure_call_stmt -> statement::Statement
+    = _ name:identifier _ "(" params:parameter_list ")" wh<";"> { statement::Statement::ProcedureCall(name, params) } /
+      _ name:identifier wh<";"> { statement::Statement::ProcedureCall(name, vec![]) }
 
 pub expression -> expression::Expression
     = function_call_expr / binary_expr / terminal_expr
