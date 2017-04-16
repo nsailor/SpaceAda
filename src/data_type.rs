@@ -1,8 +1,8 @@
 
-
 #[derive(PartialEq, Clone, Debug)]
 pub enum DataType {
     Integer,
+    Float,
 }
 
 #[test]

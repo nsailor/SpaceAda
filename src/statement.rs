@@ -13,7 +13,7 @@ fn test_return_statements() {
     assert_eq!(ada_grammar::statement("return 11 + X;"),
         Ok(Statement::Return(Some(expression::Expression::Binary(
             "+".to_string(),
-            Box::new(expression::Expression::IntValue(11)),
+            Box::new(expression::Expression::FloatValue(11.0)),
             Box::new(expression::Expression::Variable("X".to_string())))))));
 }
 
@@ -24,7 +24,7 @@ fn test_assignments() {
         Ok(Statement::Assignment("C".to_string(),
             expression::Expression::Binary(
                 "+".to_string(),
-                Box::new(expression::Expression::IntValue(11)),
+                Box::new(expression::Expression::FloatValue(11.0)),
                 Box::new(expression::Expression::Variable("X".to_string()))))));
 }
 
@@ -35,6 +35,6 @@ fn test_procedure_calls() {
                Ok(Statement::ProcedureCall("Fire_Missile".to_string(), vec![])));
     assert_eq!(ada_grammar::statement("Set_Bank_Angle(322, 4);"),
                Ok(Statement::ProcedureCall("Set_Bank_Angle".to_string(),
-                                           vec![expression::Expression::IntValue(322),
-                                                expression::Expression::IntValue(4)])));
+                                           vec![expression::Expression::FloatValue(322.0),
+                                                expression::Expression::FloatValue(4.0)])));
 }

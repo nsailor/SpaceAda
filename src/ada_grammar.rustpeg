@@ -81,18 +81,23 @@ pub enclosed_expr -> expression::Expression
     = wh<"("> x:expression wh<")"> { x }
 
 pub terminal_expr -> expression::Expression
-    = enclosed_expr /
+    = enclosed_expr / 
+      _ x:float_value _ { expression::Expression::FloatValue(x) } /
       _ x:int_value _ { expression::Expression::IntValue(x) } /
       _ x:identifier _ { expression::Expression::Variable(x) }
 
 pub int_value -> i32
     = n:$("-"? [0-9]+) { n.parse().unwrap() }
 
+pub float_value -> f32
+    = n:$("-"? [0-9]+ "." [0-9]+) { n.parse().unwrap() }
+
 pub identifier -> String
     = s:$(#quiet<[a-zA-Z][_a-zA-Z0-9]*>) { s.to_string() } / #expected("identifier")
 
 pub data_type -> data_type::DataType
-    = #quiet<"Integer"> { data_type::DataType::Integer } / #expected("a data type")
+    = #quiet<"Integer"> { data_type::DataType::Integer } /
+      #quiet<"Float"> { data_type::DataType::Float } / #expected("a data type")
 
 wh<X> = _ X _
 

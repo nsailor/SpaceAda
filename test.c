@@ -1,10 +1,10 @@
 
 #include <stdio.h>
 
-int Square(int x);
+int Square(int X);
 
 int main() {
-	printf("Square(3) = %d\n", Square(3));
+	printf("3 ^ 2 = %d\n", Square(3));
 	return 0;
 }
 

@@ -11,3 +11,4 @@ peg = { version = "*" }
 regex = "*"
 docopt = "*"
 llvm-alt = "*"
+llvm-sys = "*"

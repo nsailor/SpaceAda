@@ -1,5 +1,6 @@
 
 extern crate llvm;
+extern crate llvm_sys;
 
 mod data_type;
 mod expression;
@@ -10,6 +11,7 @@ mod parser;
 mod ada_grammar {
     include!(concat!(env!("OUT_DIR"), "/ada_grammar.rs"));
 }
+mod codegen;
 
 use std::fs::File;
 use std::io::prelude::*;
@@ -29,29 +31,32 @@ fn main() {
     let mut code = String::new();
     file.read_to_string(&mut code).unwrap();
 
-    match parser::parse(code.as_str()) {
+    let ast_tree = match parser::parse(code.as_str()) {
         Ok(ast_tree) => {
             println!("Parsing complete.");
-            println!("Syntax Tree => {:?}", ast_tree)
+            ast_tree
         }
-        Err(s) => println!("Syntax error: {}", s),
+        Err(s) => {
+            println!("Syntax error: {}", s);
+            return;
+        }
+    };
+
+    let ctx = Context::new();
+    let module = Module::new("code.spad", &ctx);
+
+    let mut codegen_ctx = codegen::CodegenContext {
+        ctx: &ctx,
+        module: &module,
+    };
+    println!("Generating code...");
+    for node in ast_tree {
+        codegen_ctx.codegen(&node);
     }
 
-    println!("----------------\nLLVM Output\n----------------");
-    let ctx = Context::new();
-    let module = Module::new("spadac1", &ctx);
-
-    let ftype = FunctionType::new(Type::get::<i32>(&ctx), &[Type::get::<i32>(&ctx)]);
-    let func = module.add_function("Square", ftype);
-    let entry = func.append("entry");
-    let builder = Builder::new(&ctx);
-    builder.position_at_end(entry);
-    let arg_x = &func[0];
-    let sum = builder.build_mul(arg_x, arg_x);
-    builder.build_ret(sum);
-
-    println!("Module = {:?}", module);
-    println!("Compiling LLVM-IR...");
-    module.compile(Path::new("spad-code.o"), 1).unwrap();
-    println!("Done!");
+    println!("----------------\nLLVM IR\n----------------");
+    println!("{:?}", module);
+    println!("Generating machine code...");
+    module.compile(Path::new("spada-code.o"), 0).unwrap();
+    println!("Done! Object code has been written to `spada-code.o`.");
 }
