@@ -4,6 +4,17 @@ use super::expression;
 use super::statement;
 use super::prototype;
 use super::subprogram;
+use super::parser;
+
+pub compilation_unit -> Vec<parser::ASTNode>
+    = root_node*
+
+pub root_node -> parser::ASTNode
+    = sp:subprogram { parser::ASTNode::Subprogram(sp) } /
+      dec:subprogram_declaration { parser::ASTNode::Declaration(dec) }
+
+pub subprogram_declaration -> subprogram::Declaration
+    = p:prototype wh<";"> { subprogram::Declaration { prototype: p }}
 
 pub subprogram -> subprogram::Subprogram
     = p:prototype wh<"is"> vars:var_declaration* wh<"begin"> smts:statement* wh<"end"> identifier wh<";"> {
@@ -86,5 +97,5 @@ pub data_type -> data_type::DataType
 wh<X> = _ X _
 
 _ = #quiet<ignored>*
-ignored = " " / "\n" 
+ignored = " " / "\n" / "\t" 
 

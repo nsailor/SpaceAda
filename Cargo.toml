@@ -8,3 +8,5 @@ build = "build.rs"
 peg = { version = "*" }
 
 [dependencies]
+regex = "*"
+docopt = "*"

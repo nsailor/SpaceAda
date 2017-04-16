@@ -1,0 +1,18 @@
+
+function Multiply_By_Pi(X : in Integer) return Integer;
+
+-- Finds the circumference of a circle with radius "Radius" and stores
+-- the result in "C".
+procedure Find_Circumference(Radius : in Integer; C : out Integer) is
+	Diameter : Integer;
+begin
+	Diameter := Radius * 2;
+	C := Multiply_By_Pi(Diameter);
+end Find_Circumference;
+
+procedure Print_Int(N : in Integer);
+
+procedure Print_Cube(A : in Integer) is
+begin
+	Print_Int(A * A * A);
+end Print_Cube;

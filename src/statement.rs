@@ -1,6 +1,4 @@
-
 use expression;
-use ada_grammar;
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum Statement {
@@ -11,6 +9,7 @@ pub enum Statement {
 
 #[test]
 fn test_return_statements() {
+    use ada_grammar;
     assert_eq!(ada_grammar::statement("return 11 + X;"),
         Ok(Statement::Return(Some(expression::Expression::Binary(
             "+".to_string(),
@@ -20,6 +19,7 @@ fn test_return_statements() {
 
 #[test]
 fn test_assignments() {
+    use ada_grammar;
     assert_eq!(ada_grammar::statement("C := 11 + X;"),
         Ok(Statement::Assignment("C".to_string(),
             expression::Expression::Binary(
@@ -30,6 +30,7 @@ fn test_assignments() {
 
 #[test]
 fn test_procedure_calls() {
+    use ada_grammar;
     assert_eq!(ada_grammar::statement("Fire_Missile;"),
                Ok(Statement::ProcedureCall("Fire_Missile".to_string(), vec![])));
     assert_eq!(ada_grammar::statement("Set_Bank_Angle(322, 4);"),

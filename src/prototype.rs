@@ -1,5 +1,4 @@
 
-use data_type::DataType;
 use data_type;
 
 #[derive(PartialEq, Clone, Debug)]

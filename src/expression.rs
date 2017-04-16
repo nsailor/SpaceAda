@@ -1,6 +1,5 @@
 
 use std::boxed::Box;
-use ada_grammar;
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum Expression {
@@ -12,6 +11,7 @@ pub enum Expression {
 
 #[test]
 fn test_identifiers() {
+    use ada_grammar;
     assert_eq!(ada_grammar::identifier("test_x"), Ok("test_x".to_string()));
     assert!(ada_grammar::identifier("3numberfirst").is_err());
     assert!(ada_grammar::identifier("a-n").is_err());
@@ -19,6 +19,7 @@ fn test_identifiers() {
 
 #[test]
 fn test_int_values() {
+    use ada_grammar;
     assert_eq!(ada_grammar::int_value("32"), Ok(32));
     assert_eq!(ada_grammar::int_value("-42"), Ok(-42));
     assert!(ada_grammar::int_value("ab4").is_err());
@@ -27,6 +28,7 @@ fn test_int_values() {
 
 #[test]
 fn test_terminal_expressions() {
+    use ada_grammar;
     assert_eq!(ada_grammar::expression("11"), Ok(Expression::IntValue(11)));
     assert_eq!(ada_grammar::expression("Pitch"),
                Ok(Expression::Variable("Pitch".to_string())));
@@ -34,6 +36,7 @@ fn test_terminal_expressions() {
 
 #[test]
 fn test_arithmetic() {
+    use ada_grammar;
     assert_eq!(ada_grammar::expression("3 + 2 * 6"), Ok(Expression::Binary("+".to_string(),
         Box::new(Expression::IntValue(3)),
         Box::new(Expression::Binary("*".to_string(),
@@ -49,6 +52,7 @@ fn test_arithmetic() {
 
 #[test]
 fn test_function_calls() {
+    use ada_grammar;
     assert_eq!(ada_grammar::expression("f(3, 2)"),
                Ok(Expression::FunctionCall("f".to_string(),
                                            vec![Expression::IntValue(3),

@@ -1,9 +1,7 @@
 
 use prototype;
 use statement::*;
-use prototype::*;
 use data_type::*;
-use expression::*;
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct VarDeclaration {
@@ -16,4 +14,9 @@ pub struct Subprogram {
     pub prototype: prototype::Prototype,
     pub variables: Vec<VarDeclaration>,
     pub body: Vec<Statement>,
+}
+
+#[derive(PartialEq, Clone, Debug)]
+pub struct Declaration {
+    pub prototype: prototype::Prototype,
 }
