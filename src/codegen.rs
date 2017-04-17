@@ -52,18 +52,27 @@ impl<'a> CodegenContext<'a> {
     }
 
     fn codegen_subprogram(&mut self, sp: &Subprogram) {
-        let func = self.module
-            .add_function(sp.prototype.name.as_str(),
-                          self.function_type_from_prototype(&sp.prototype));
+        let mut is_new = false;
+        let func = match self.fmap.get(sp.prototype.name.as_str()) {
+            Some(f) => f.function,
+            None => {
+                is_new = true;
+                self.module.add_function(sp.prototype.name.as_str(),
+                                         self.function_type_from_prototype(&sp.prototype))
+            }
+        };
+
         let entry = func.append("entry");
         let builder = Builder::new(self.ctx);
         builder.position_at_end(entry);
 
-        self.fmap.insert(sp.prototype.name.clone(),
-                         FunctionMeta {
-                             function: func,
-                             prototype: sp.prototype.clone(),
-                         });
+        if is_new {
+            self.fmap.insert(sp.prototype.name.clone(),
+                             FunctionMeta {
+                                 function: func,
+                                 prototype: sp.prototype.clone(),
+                             });
+        }
 
         // Create the variable list.
         let mut variables: VariableMap = HashMap::new();

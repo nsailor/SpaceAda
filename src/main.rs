@@ -44,6 +44,7 @@ fn main() {
 
     let ctx = Context::new();
     let module = Module::new("code.spad", &ctx);
+    module.set_target("mips");
 
     let mut codegen_ctx = codegen::CodegenContext {
         ctx: &ctx,
@@ -58,6 +59,7 @@ fn main() {
     println!("----------------\nLLVM IR\n----------------");
     println!("{:?}", module);
     println!("Generating machine code...");
-    module.compile(Path::new("spada-code.o"), 0).unwrap();
+    module.compile(Path::new("spada-code.o"), 0)
+        .unwrap();
     println!("Done! Object code has been written to `spada-code.o`.");
 }

@@ -2,10 +2,7 @@
 -- Defined in a separate C file.
 function Int_To_Float(X : in Integer) return Float;
 
-procedure Float_Square(X : in Float; S : out Float) is
-begin
-	S := X * X;
-end Float_Square;
+procedure Float_Square(X : in Float; S : out Float);
 
 procedure Square(X : in Integer; S : out Integer; SF : out Float) is
 	XF : Float;
@@ -15,3 +12,8 @@ begin
 	Float_Square(XF, SF);
 	SF := SF * 3.14159;
 end Square;
+
+procedure Float_Square(X : in Float; S : out Float) is
+begin
+	S := X * X;
+end Float_Square;
