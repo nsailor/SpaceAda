@@ -15,7 +15,9 @@ Comments begin with a `--` and span the entire line.
 SpaceAda supports simple procedures and functions. A procedure is defined using the following syntax:
 
 ```
-procedure Print_Sum(X : in Integer, Y : in Integer) is
+procedure Print_Int(X : in Integer);
+
+procedure Print_Sum(X : in Integer; Y : in Integer) is
 	Sum : Integer;
 begin
 	Sum := X + Y;
@@ -31,7 +33,12 @@ function Square(X : in Integer) return Integer is
 begin
 	return X * X;
 end Square;
+
+function Average(A : in Float; B : in Float) return Float is
+begin
+	return A * B * 0.5;
+end Average;
 ```
 
-The first version of SpaceAda will support only the `Integer` data type.
+The first version of SpaceAda will support only the `Integer` and `Float` data types.
 
