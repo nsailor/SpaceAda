@@ -226,7 +226,6 @@ impl<'a> CodegenContext<'a> {
                     DataType::Float => Type::get::<f32>(self.ctx),
                     DataType::Integer => Type::get::<i32>(self.ctx),
                 }
-                // _ => panic!("This compiler only supports the Integer data type."),
             }
         }
     }

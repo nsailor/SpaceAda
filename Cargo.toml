@@ -10,5 +10,6 @@ peg = { version = "*" }
 [dependencies]
 regex = "*"
 docopt = "*"
+rustc-serialize = "*"
 llvm-alt = "*"
 llvm-sys = "*"

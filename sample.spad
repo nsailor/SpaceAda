@@ -1,0 +1,58 @@
+-- Sample SpaceAda program.
+
+-- Defined in `spada-rt.c`
+function Int_To_Float(X : in Integer) return Float;
+function Float_To_Int(X : in Float) return Integer;
+
+function Read_Int() return Integer;
+procedure Print_Int(X : in Integer);
+function Read_Float() return Float;
+procedure Print_Float(X : in Float);
+
+procedure Put_Char(C : in Integer);
+procedure Put_Newline;
+
+function Average(A : in Float; B : in Float) return Float is
+begin
+	return (A + B) * 0.5;
+end Average;
+
+procedure Print_Ada is
+begin
+	Put_Char(65);
+	Put_Char(100);
+	Put_Char(97);
+end Print_Ada;
+
+procedure Print_is is
+begin
+	Put_Char(105);
+	Put_Char(115);
+end Print_is;
+
+procedure Print_The_Truth is
+	Space : Integer;
+begin
+	Space := 32;
+	Print_Ada;
+	Put_Char(Space);
+	Print_is;
+	Put_Char(Space);
+	Put_Char(116);
+	Put_Char(104);
+	Put_Char(101);
+	Put_Char(Space);
+	Put_Char(98);
+	Put_Char(101);
+	Put_Char(115);
+	Put_Char(116);
+	Put_Char(33);
+	Put_Newline;
+end Print_The_Truth;
+
+-- Computes the average of two floating point numbers given by the user.
+procedure Main is
+begin
+	Print_The_Truth;
+	Print_Float(Average(Read_Float(), Read_Float()));
+end Main;
