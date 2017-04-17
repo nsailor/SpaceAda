@@ -24,6 +24,12 @@ pub struct FunctionMeta<'a> {
     pub prototype: Prototype,
 }
 
+struct SubprogramContext<'a> {
+    pub vars: VariableMap<'a>,
+    pub func: &'a Function,
+    pub builder: &'a Builder,
+}
+
 type VariableMap<'a> = HashMap<&'a str, Variable<'a>>;
 type FunctionMap<'a> = HashMap<String, FunctionMeta<'a>>;
 
@@ -95,13 +101,20 @@ impl<'a> CodegenContext<'a> {
                         });
         }
 
+        let subprogram_ctx = SubprogramContext {
+            vars: variables,
+            func: func,
+            builder: &builder,
+        };
+
         let mut has_returned = false;
         for s in &sp.body {
             if has_returned {
                 panic!("Dead code after a return statement!");
             }
-            self.codegen_statement(s, &mut has_returned, &variables, &builder);
+            self.codegen_statement(s, &mut has_returned, &subprogram_ctx);
         }
+
 
         if !has_returned {
             // Add a return void so that procedures don't need to end with
@@ -124,8 +137,7 @@ impl<'a> CodegenContext<'a> {
     fn codegen_call(&self,
                     name: &String,
                     parameters: &[Expression],
-                    builder: &'a Builder,
-                    vars: &'a VariableMap)
+                    sctx: &'a SubprogramContext)
                     -> &'a Value {
         // Find the function.
         let func = &self.fmap[name];
@@ -134,12 +146,12 @@ impl<'a> CodegenContext<'a> {
         for arg in &func.prototype.arguments {
             let is_pointer = arg.direction != ParameterDirection::In;
             match is_pointer {
-                false => args.push(self.codegen_expression(&parameters[par_index], vars, builder)),
+                false => args.push(self.codegen_expression(&parameters[par_index], sctx)),
                 true => {
                     match parameters[par_index] {
                         Expression::Variable(ref s) => {
                             /// @todo Should check if the variable is indeed a pointer.
-                            args.push(vars[s.as_str()].value)
+                            args.push(sctx.vars[s.as_str()].value)
                         }
                         _ => panic!("\"out\" parameters need an identifier!"),
                     }
@@ -147,63 +159,61 @@ impl<'a> CodegenContext<'a> {
             };
             par_index += 1;
         }
-        builder.build_call(func.function, args.as_slice())
+        sctx.builder.build_call(func.function, args.as_slice())
     }
 
     fn codegen_statement(&self,
                          s: &Statement,
                          has_returned: &mut bool,
-                         vars: &VariableMap,
-                         builder: &'a Builder) {
+                         sctx: &'a SubprogramContext) {
         match *s {
             Statement::Return(ref val) => {
                 *has_returned = true;
                 match *val {
-                    Some(ref exp) => builder.build_ret(self.codegen_expression(exp, vars, builder)),
-                    None => builder.build_ret_void(),
+                    Some(ref exp) => {
+                        sctx.builder
+                            .build_ret(self.codegen_expression(exp, sctx))
+                    }
+                    None => sctx.builder.build_ret_void(),
                 }
             }
             Statement::Assignment(ref dest, ref val) => {
-                if vars[dest.as_str()].is_pointer == false {
+                if sctx.vars[dest.as_str()].is_pointer == false {
                     panic!("Attempting to assign to an argument marked as \"in\".");
                 }
-                builder.build_store(self.codegen_expression(val, vars, builder),
-                                    vars[dest.as_str()].value)
+                sctx.builder.build_store(self.codegen_expression(val, sctx),
+                                         &sctx.vars[dest.as_str()].value)
             }
             Statement::ProcedureCall(ref s, ref args) => {
-                self.codegen_call(s, args.as_slice(), builder, vars)
+                self.codegen_call(s, args.as_slice(), sctx)
             }
         };
     }
 
-    fn codegen_expression(&self,
-                          e: &Expression,
-                          vars: &'a VariableMap,
-                          builder: &'a Builder)
-                          -> &'a Value {
+    fn codegen_expression(&self, e: &Expression, sctx: &'a SubprogramContext) -> &'a Value {
         match *e {
             Expression::IntValue(x) => x.compile(self.ctx),
             Expression::FloatValue(x) => x.compile(self.ctx),
             Expression::Variable(ref name) => {
-                let var_info = &vars[name.as_str()];
+                let var_info = &sctx.vars[name.as_str()];
                 match var_info.is_pointer {
-                    true => builder.build_load(var_info.value),
+                    true => sctx.builder.build_load(var_info.value),
                     false => var_info.value,
                 }
             }
             Expression::Binary(ref op, ref lhs, ref rhs) => {
-                let v1 = self.codegen_expression(lhs.as_ref(), vars, builder);
-                let v2 = self.codegen_expression(rhs.as_ref(), vars, builder);
+                let v1 = self.codegen_expression(lhs.as_ref(), sctx);
+                let v2 = self.codegen_expression(rhs.as_ref(), sctx);
                 match op.as_str() {
-                    "+" => builder.build_add(v1, v2),
-                    "-" => builder.build_sub(v1, v2),
-                    "*" => builder.build_mul(v1, v2),
-                    "/" => builder.build_div(v1, v2),
+                    "+" => sctx.builder.build_add(v1, v2),
+                    "-" => sctx.builder.build_sub(v1, v2),
+                    "*" => sctx.builder.build_mul(v1, v2),
+                    "/" => sctx.builder.build_div(v1, v2),
                     _ => unimplemented!(),
                 }
             }
             Expression::FunctionCall(ref s, ref args) => {
-                self.codegen_call(s, args.as_slice(), builder, vars)
+                self.codegen_call(s, args.as_slice(), sctx)
             }
         }
     }
